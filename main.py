@@ -26,7 +26,7 @@ def check_new_album(albums):
     r = redis.Redis(host='redis', port=6379, db=0)
     new_albums = []
     for album in albums:
-        if r.get(album[0]) is not None:
+        if r.get(album[0]) is None:
             logging.info("New: ", album[1])
             new_albums.append(album)
             r.set(album[0], album[1])
