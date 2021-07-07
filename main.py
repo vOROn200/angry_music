@@ -47,7 +47,7 @@ def send_to_mail(content_body):
 def get_content(albums):
     result = ""
     for album in albums:
-        result = result + '<a href={}>{}</a></br>'.format(album[0], album[1])
+        result = result + '<a clicktracking="off" href={}>{}</a></br>'.format(album[0], album[1])
     return result
 
 
