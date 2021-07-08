@@ -29,7 +29,7 @@ def check_new_album(albums):
     new_albums = []
     for album in albums:
         if r.get(album["link"]) is None:
-            logging.info("New: ", album["title"])
+            logging.info("New: {}".format(album["title"]))
             new_albums.append(album)
             r.set(album["link"], album["title"])
     return new_albums
@@ -40,10 +40,10 @@ def send_to_mail(content_body):
     from_email = Email("angry_music@hyperlab.work")
     to_email = To("artem.yushkov@gmail.com")
     subject = "New best albums"
-    content = Content("text/plain", content_body)
+    content = Content("text/html", content_body)
     mail = Mail(from_email, to_email, subject, content)
     response = sg.client.mail.send.post(request_body=mail.get())
-    logging.info("Send Mail : status code = %s", response.status_code)
+    logging.info("Send Mail : status code = {}".format(response.status_code))
 
 
 def get_content(albums):
