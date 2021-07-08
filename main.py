@@ -1,10 +1,12 @@
+import logging
+import os
 from bs4 import BeautifulSoup
 from sendgrid.helpers.mail import *
 import requests
 import redis
 import sendgrid
-import logging
-import os
+from jinja2 import Template
+
 
 def get_albums(link):
     logging.info('parsing link: {}'.format(link))
@@ -16,7 +18,7 @@ def get_albums(link):
         album = article.find('h2', 'entry-title').find('a')
         link_album = album.get('href')
         title_album = album.get_text().replace('Review', '').strip()
-        result = (link_album, title_album)
+        result = {'link': link_album, 'title': title_album}
         logging.debug(result)
         albums.append(result)
     return albums
@@ -26,10 +28,10 @@ def check_new_album(albums):
     r = redis.Redis(host='redis', port=6379, db=0)
     new_albums = []
     for album in albums:
-        if r.get(album[0]) is None:
-            logging.info("New: ", album[1])
+        if r.get(album["link"]) is None:
+            logging.info("New: ", album["title"])
             new_albums.append(album)
-            r.set(album[0], album[1])
+            r.set(album["link"], album["title"])
     return new_albums
 
 
@@ -41,18 +43,17 @@ def send_to_mail(content_body):
     content = Content("text/plain", content_body)
     mail = Mail(from_email, to_email, subject, content)
     response = sg.client.mail.send.post(request_body=mail.get())
-    logging.debug("Send Mail : status code = %s", response.status_code)
+    logging.info("Send Mail : status code = %s", response.status_code)
 
 
 def get_content(albums):
-    result = ""
-    for album in albums:
-        result = result + '<a clicktracking="off" href={}>{}</a></br>'.format(album[0], album[1])
-    return result
+    html = open('email.html').read()
+    template = Template(html)
+    return template.render(albums_list=albums)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     for link in [
         'https://www.angrymetalguy.com/tag/50/', 'https://www.angrymetalguy.com/tag/45/'
     ]:
