@@ -46,19 +46,20 @@ def send_to_mail(content_body):
     logging.info("Send Mail : status code = {}".format(response.status_code))
 
 
-def get_content(albums):
+def get_content(albums, count_links):
     html = open('email.html').read()
     template = Template(html)
-    return template.render(albums_list=albums)
+    return template.render(albums_list=albums, count_links=count_links)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    for link in [
-        'https://www.angrymetalguy.com/tag/50/', 'https://www.angrymetalguy.com/tag/45/'
-    ]:
+    links = [
+        'https://www.angrymetalguy.com/tag/50/', 'https://www.angrymetalguy.com/tag/45/', 'https://www.angrymetalguy.com/tag/40/'
+    ]
+    for count_links, link in enumerate(links):
         albums = get_albums(link)
         new_albums = check_new_album(albums)
         if len(new_albums) > 0:
-            content_body = get_content(new_albums)
+            content_body = get_content(new_albums, count_links)
             send_to_mail(content_body)
